@@ -51,68 +51,319 @@
         <div id="fullpage">
             <div class="section s1">
                 <a href="#1"></a>
-                <div class="section2">
-
-
+                <div class="section2" id="section2">
                     <div class="photo_gallery">
-
-
-
-                        {% if post_follow %}
-                        {% for posts in post_follow %}
-                        <div class="overlay10" id="myOverlayopen{{posts.id}}">
-                            <div class="popup1">
-                                <div class="photo-post">
-                                    <img src="{{ posts.img.url }}" alt="" width="100%" height="100%"
-                                         style=" object-fit: cover;	">
+                        <div class="navigation">
+                            <a href="{% url 'profile' %}">
+                                <div class="home-container">
+                                    <div class="home-img">
+                                        <img src="{{ profile.img.url }}" alt="" width="50px">
+                                    </div>
+                                    <div class="home-text2">
+                                        <p>Профиль</p>
+                                    </div>
                                 </div>
+                            </a>
+                            <a class="nav-bar" href="{% url 'main' %}">
+                                <div class="home-container2">
+                                    <div class="home-img2">
+                                        <img src="{% static 'img/home.png' %}" alt="" width="20px">
+                                    </div>
+                                    <div class="home-text">
+                                        <p>Главная</p>
+                                    </div>
+                                </div>
+                            </a>
+                            <div class="home-container2" id="message-btn">
+                                <div class="home-img2">
+                                    <img src="{% static 'img/message.png' %}" alt="" width="20px">
+                                </div>
+                                <div class="home-text">
+                                    <p>Сообщения</p>
+                                </div>
+                            </div>
+                            <div class="home-container2">
+                                <div class="home-img2">
+                                    <img src="{% static 'img/uvedom.png' %}" alt="" width="20px">
+                                </div>
+                                <div class="home-text">
+                                    <p>Уведомления</p>
+                                </div>
+                            </div>
+                            <div class="home-container2 add-post">
+                                <div class="home-img2">
+                                    <img src="{% static 'img/add.png' %}" alt="" width="20px">
+                                </div>
+                                <div class="home-text">
+                                    <p>Создать</p>
+                                </div>
+                            </div>
+                            <a class="nav-bar" href="{% url 'statistics' %}">
+                                <div class="home-container2">
+                                    <div class="home-img2">
+                                        <img src="{% static 'img/statistic.png' %}" alt="" width="20px">
+                                    </div>
+                                    <div class="home-text">
+                                        <p>Статистика</p>
+                                    </div>
+                                </div>
+                            </a>
+                            <div class="home-container2">
+                                <div class="home-img2">
+                                    <img src="{% static 'img/settings.png' %}" alt="" width="20px">
+                                </div>
+                                <div class="home-text">
+                                    <p>Настройки</p>
+                                </div>
+                            </div>
 
-                                <a href="{% url 'search_profile' posts.user.id%}">
-                                    <div class="header">
-                                        <div class="avatar3">
-                                            <img class="main-logo" src="{{ posts.user.img.url }}" alt=""
-                                                 width="50px">
+                        </div>
+                        <div class="message" id="message-content">
+                            <div class="message-box">
+                                <div class="chat">
+                                    <div class="well">
+                                        <form action="" id="search-form" method="post" autocomplete="off">
+                                            {% csrf_token %}
+                                            <input class="search2" type="search" name="" id="search-input"
+                                                   placeholder="Поиск">
+                                        </form>
+                                    </div>
+                                    <div class="chat-message">
+
+                                        <div class="chat-list">
+                                            {% for follow in follows %}
+                                            <div class="message-chat-container" data-chat-id="{{follow.pk}}"
+                                                 id="message{{follow.pk}}">
+                                                <div class="avatar-comment">
+                                                    <img class="main-logo" src="{{ follow.img.url }}" alt=""
+                                                         width="50px">
+                                                </div>
+                                                <div class="chat-text">
+                                                    <p class="user-name-message">{{follow.name}}</p>
+                                                    {% if not follow|message:user %}
+                                                    <p class="last-message">Поздоровайся с {{follow.name}}!</p>
+                                                    {% else %}
+                                                    {% for message in follow|message:user %}
+                                                    {% if forloop.last %}
+                                                    {% if message.sender %}
+                                                    <p class="last-message">Вы: {{message.sender.content}}</p>
+                                                    {% else %}
+                                                    <p class="last-message">{{message.receiver.content}}</p>
+                                                    {% endif %}
+                                                    {% endif %}
+                                                    {% endfor %}
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% endfor %}
                                         </div>
 
-                                        <h1 class="title-post">{{posts.user.name}}</h1>
                                     </div>
-                                </a>
 
-                                <div class="description" id="description{{posts.id}}">
-                                    <p>{{ posts.description | linebreaksbr }}</p>
                                 </div>
-                                <form action="{% url 'like' %}" method="post" class="like-form form-like form2"
-                                      id="k{{posts.id}}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="post_id" value="{{posts.id}}">
-                                    <button class="ui button positive like-btn{{posts.id}}"
-                                            id="btnlike{{posts.id}}"
-                                            type="submit"><p
-                                            {% if posts|color:user %}
-                                            style="color: red;"
+                                <div class="message-content_404" id="message-content_404">
+                                    <img style="border-radius: 50px; margin-top: 20%"
+                                         src="{% static 'img/message.gif' %}" alt=""
+                                         width="150px">
+                                    <p style=" font-family: 'Montserrat Alternates', sans-serif; font-size: 17px;">
+                                        Выберите собеседника и начните общение</p>
+                                </div>
+                                {% for follow in follows %}
+                                <div class="message-content" id="chat{{follow.pk}}">
+                                    <div class="message-chat">
+                                        <div class="avatar-message">
+                                            <img class="main-logo" src="{{ follow.img.url }}" alt=""
+                                                 width="50px">
+                                        </div>
+                                        <div class="message-chat-text">
+                                            <p class="user-name-message">{{follow.name}}</p>
+
+                                            {% if not follow|message:user%}
+                                            <p class="last-message">Начни диалог первым!</p>
+                                            {% else %}
+                                            <p class="last-message">Продолжи общение!</p>
                                             {% endif %}
-                                            class="like-img"
-                                            id="like-img{{posts.id}}">
-                                        ❤ {{ posts.liked.all.count }}</p></button>
-                                </form>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="user-chat" id="user-message{{follow.pk}}">
+                                        {% for message in follow|message:user %}
+                                        {% if message.sender and not message.sender.content|smile %}
+                                        <div style=" width: 640px; margin-left: 20px; display: flex; justify-content: right">
+                                            <div class="receiver">{{message.sender.content}}</div>
+                                        </div>
+                                        {% elif message.sender and message.sender.content|smile %}
+                                        <div style=" width: 640px; margin-left: 20px; display: flex; justify-content: right">
+                                            <div class="receiver_emoji">{{message.sender.content}}</div>
+                                        </div>
+                                        {% elif message.receiver and message.receiver.content|smile %}
+                                        <div style=" width: 340px; margin-left: 10px; display: flex; justify-content: left;text-align: left; ">
+                                            <div class="sender_emoji">{{message.receiver.content}}</div>
+                                        </div>
+                                        {% else %}
+                                        <div class="sender">{{message.receiver.content}}</div>
+                                        {% endif %}
+                                        {% endfor %}
+
+                                    </div>
+                                    <div class="sent-message">
+                                        <form action="{% url 'message' %}" method="post" class="send-message"
+                                              id="q{{follow.pk}}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="follow_pk" value="{{follow.pk}}">
+                                            <input required class="message-btn sent" id="message-btn{{follow.pk}}"
+                                                   type="text"
+                                                   name="message"
+                                                   placeholder="Напишите сообщение">
+                                        </form>
+                                        <button class="ui button positive2"
+                                                type="submit">
+                                            <p
+                                                    style="color: red;"
+                                                    id="like-img">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25"
+                                                     style="margin-top: 4px" viewBox="0 0 100 100">
+                                                    <rect x="40" y="0" width="20" height="100" rx="10" ry="10"
+                                                          fill="#1e1e1e"/>
+                                                    <rect x="0" y="40" width="100" height="20" rx="10" ry="10"
+                                                          fill="#1e1e1e"/>
+                                                </svg>
+
+                                            </p>
+                                        </button>
+                                        <form action="{% url 'message' %}" method="post" class="send-message"
+                                              id="q{{follow.pk}}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="follow_pk" value="{{follow.pk}}">
+                                            <input type="hidden" name="message" value="🧡" id="like">
+
+                                            <button class="ui button positive2"
+                                                    type="submit"><p
+                                                    style="color: red;"
+                                                    id="like-img">
+                                                ❤
+                                            </p></button>
+                                        </form>
+                                    </div>
+
+
+                                </div>
+                                {% endfor %}
+
                             </div>
                         </div>
+                        <div id="photo-content">
+                            {% if post_follow %}
+                            {% for posts in post_follow %}
+                            <div class="overlay10" id="myOverlayopen{{posts.id}}">
+                                <div class="popup1">
+                                    <div class="photo-post">
+                                        <img src="{{ posts.img.url }}" alt="" width="100%" height="100%"
+                                             style=" object-fit: cover;	">
+                                    </div>
 
 
+                                    <a href="{% url 'search_profile' posts.user.id%}">
+                                        <div class="header">
+                                            <div class="avatar3">
+                                                <img class="main-logo" src="{{ posts.user.img.url }}" alt=""
+                                                     width="50px">
+                                            </div>
+                                            <h1 class="title-post">{{posts.user.name}}</h1>
+                                        </div>
+                                    </a>
+
+                                    <div class="description" id="description{{posts.id}}">
+                                        <p style="margin-bottom: 30px;">{{ posts.description | linebreaksbr }}</p>
+                                        {% with comments=posts|comments %}
+                                        {% for comment in comments %}
+                                        <div class="comment-box">
+                                            <div class="comment-container" id="comment-container">
+                                                <div class="avatar-comment">
+                                                    <img class="main-logo" src="{{ comment.creator.img.url }}" alt=""
+                                                         width="50px">
+                                                </div>
+                                                <div class="comment-text">
+                                                    <p class="user-name-comment">{{comment.creator.name}}</p>
+                                                    <p>{{comment.text}}</p>
+                                                </div>
+                                            </div>
+                                            <div class="comment-action">
+                                                {% if comment.num_likes > 0 %}
+                                                <form action="{% url 'comment_like' %}" class="comment-like"
+                                                      method="post"
+                                                      id="k{{comment.id}}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="comment_id" value="{{comment.id}}">
+                                                    <button class="comment-like-btn"
+                                                            id="comments_num_likes{{comment.id}}"
+                                                            type="submit">
+                                                        Нравится({{comment.num_likes}})
+                                                    </button>
+                                                </form>
+                                                {% else %}
+                                                <form action="{% url 'comment_like' %}" class="comment-like"
+                                                      method="post"
+                                                      id="k{{comment.id}}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="comment_id" value="{{comment.id}}">
+                                                    <button class="comment-like-btn"
+                                                            id="comments_num_likes{{comment.id}}"
+                                                            type="submit">
+                                                        Нравится
+                                                    </button>
+                                                </form>
+                                                {% endif %}
+                                                <p style="margin-left: 10px">Ответить</p>
+                                            </div>
+
+                                        </div>
+                                        {% endfor %}
+                                        {% endwith %}
+
+                                    </div>
+                                    <form action="{% url 'comment' %}" method="post" class="comment-form"
+                                          id="k{{posts.id}}"
+                                          enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="post_id" value="{{posts.id}}">
+                                        <input type="hidden" id="user_photo" name="user_photo"
+                                               value="{{profile.img.url}}">
+                                        <input class="comment-btn{{posts.id}} comment" type="text" name="comment"
+                                               id="btncomment{{posts.id}}" placeholder="Оставить комментарий">
+                                    </form>
+                                    <form action="{% url 'like' %}" method="post" class="like-form form-like form2"
+                                          id="k{{posts.id}}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="post_id" value="{{posts.id}}">
+                                        <button class="ui button positive like-btn{{posts.id}}"
+                                                id="btnlike{{posts.id}}"
+                                                type="submit"><p
+                                                {% if posts|color:user %}
+                                                style="color: red;"
+                                                {% endif %}
+                                                class="like-img"
+                                                id="like-img{{posts.id}}">
+                                            ❤ {{ posts.liked.all.count }}</p></button>
+                                    </form>
+                                </div>
+                            </div>
 
 
-                        {% endfor %}
+                            {% endfor %}
+                        </div>
                     </div>
+
+
                 </div>
-
-
             </div>
-        </div>
-        {% else %}
-        <div>
-            <img src="{% static 'img/not.gif' %}" alt="" width="300px" style="margin-left: 30%; margin-top: 5%">
-            <h2 class="no-followers-title">Подпишитесь на друзей, чтобы видеть их обновления</h2>
-            {% endif %}
+            {% else %}
+            <div>
+                <img src="{% static 'img/not.gif' %}" alt="" width="300px" style="margin-left: 30%; margin-top: 5%">
+                <h2 class="no-followers-title">Подпишитесь на друзей, чтобы видеть их обновления</h2>
+                {% endif %}
+            </div>
         </div>
     </div>
     <div class="section s2">
@@ -133,12 +384,220 @@
         showActiveTooltip: true,
         controlArrows: false,
         slidesNavigation: true,
-        normalScrollElements: '.s2, .photo_gallery, .overlay10'
+        normalScrollElements: '.s2, .photo_gallery'
     });
 </script>
 <script src="http://code.jquery.com/jquery-2.0.2.min.js"></script>
 <script src="{% static 'js/like.js' %}" defer></script>
 <script src="{% static 'js/search.js' %}" defer></script>
+<script src="{% static 'js/comments.js' %}" defer></script>
+<script src="{% static 'js/commentsLike.js' %}" defer></script>
+<script src="{% static 'js/sendMessage.js' %}" defer></script>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"
+        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+<script>
+    $('.add-post').click(function () {
+        $('.overlay').fadeIn();
+    });
+
+    // Закрытие окна на крестик
+    $('.close-popup').click(function () {
+        $('.overlay').fadeOut();
+    });
+
+    // Закрытие окна на поле
+    $(document).mouseup(function (e) {
+        var popup = $('.popup');
+        if (e.target != popup[0] && popup.has(e.target).length === 0) {
+            $('.overlay').fadeOut();
+        }
+    });
+</script>
+<script>
+    (function () {
+
+        'use strict';
+
+        $('.input-file').each(function () {
+            var $input = $(this),
+                $label = $input.next('.js-labelFile'),
+                labelVal = $label.html();
+
+            $input.on('change', function (element) {
+                var fileName = '';
+                if (element.target.value) fileName = element.target.value.split('\\').pop();
+                fileName ? $label.addClass('has-file').find('.js-fileName').html(fileName) : $label.removeClass('has-file').html(labelVal);
+            });
+        });
+
+    })();
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('a.myLinkModal').click(function (event) {
+            event.preventDefault();
+            $('#myOverlay').fadeIn(297, function () {
+                $('#myModal')
+                    .css('display', 'block')
+                    .animate({
+                        opacity: 1
+                    }, 198);
+            });
+        });
+
+        $('#myModal__close, #myOverlay').click(function () {
+            $('#myModal').animate({
+                    opacity: 0
+                }, 198,
+                function () {
+                    $(this).css('display', 'none');
+                    $('#myOverlay').fadeOut(297);
+                });
+        });
+    });
+</script>
+
+<script src="http://code.jquery.com/jquery-2.0.2.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        //Скрыть PopUp при загрузке страницы
+        PopUpHide();
+    });
+
+    //Функция отображения PopUp
+    function PopUpShow() {
+        $("#popup1").show();
+
+    }
+
+    //Функция скрытия PopUp
+    function PopUpHide() {
+        $("#popup1").hide();
+    }
+</script>
+
+<script>
+    const messageBtn = document.getElementById('message-btn')
+    const photoContent = document.getElementById('photo-content')
+    const messageContent = document.getElementById('message-content')
+    const section2 = document.getElementById('section2')
+    messageBtn.onclick = function () {
+        photoContent.style.display = "none";
+        messageContent.style.display = "unset";
+        section2.style.overflowY = "hidden";
+
+    };
+    let intervalId;
+    let counter;
+    const message404 = document.getElementById("message-content_404");
+    const messageContainers = document.getElementsByClassName("message-chat-container");
+    const chats = document.querySelectorAll("[id^='chat']");
+
+    for (let i = 0; i < messageContainers.length; i++) {
+        let messageContainer = messageContainers[i];
+        messageContainer.addEventListener("click", function () {
+            let chatId = messageContainer.getAttribute("data-chat-id");
+            hideAllChats();
+            message404.style.display = "none";
+            showChat(chatId);
+    counter = chatId
+    intervalId = setInterval(function() {
+        receiveMsg(chatId); // Повторный вызов каждые 2 секунды
+    }, 2000);
+
+        });
+    }
+
+    function hideAllChats() {
+        for (let i = 0; i < chats.length; i++) {
+            let chat = chats[i];
+            chat.style.display = "none";
+            clearInterval(intervalId);
+        }
+    }
 
 
+    function showChat(chatId) {
+
+        let chat = document.getElementById("chat" + chatId);
+        if (chat) {
+            chat.style.display = "block";
+            message404.style.display = "none";
+            let message = document.getElementById("user-message" + chatId)
+            const scrollHeight = message.scrollHeight;
+            const scrollOptions = {
+                top: scrollHeight,
+                behavior: "smooth" // Добавляем плавность
+            };
+            message.scrollTo(scrollOptions);
+
+        }
+    }
+
+
+
+
+    function containsSmileys(text) {
+        var regex = /[\uD83C-\uDBFF\uDC00-\uDFFF]+/g; // Регулярное выражение для поиска смайликов
+        return regex.test(text);
+    }
+
+
+
+    counter = {{num}}
+    function receiveMsg(followPk) {
+        let url = "{% url 'receive_message' %}?follow_pk=" + followPk
+        const message_container = document.getElementById('user-message' + followPk)
+        const scrollHeight = message_container.scrollHeight;
+        const scrollOptions = {
+            top: scrollHeight,
+            behavior: "smooth" // Добавляем плавность
+        };
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Follow-Pk': followPk,
+            },
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                if (data.length == 0) {
+                } else {
+
+                    let lastMsg = data[data.length - 1]
+                    console.log(lastMsg)
+
+                    if (counter == data.length) {
+                        console.log("there is no new chat")
+                    } else {
+                        message_container.innerHTML += `
+                                 <div style=" display: flex; justify-content: left;text-align: left; ">
+                                          <div class="sender">${lastMsg}</div>
+                                 </div>
+
+
+            `
+                        message_container.scrollTo(scrollOptions);
+                    }
+
+
+                }
+
+
+
+                counter = data.length
+
+
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+
+
+</script>
 {% endblock %}

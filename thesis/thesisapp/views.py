@@ -1,11 +1,15 @@
+import urllib
+
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
+from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, \
+    PasswordResetCompleteView
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.hashers import check_password
 from django.views.generic import ListView, View
 from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.contrib import messages
+from django.db.models import Q
 from itertools import chain
 from .models import *
 from .forms import *
@@ -123,6 +127,7 @@ class Main(ListView):
             super().get(request)
             profile = Profile.objects.get(user=request.user)
             follows = profile.user.following.all()
+
             users = [user for user in follows]
             post_follow = []
             for u in users:
@@ -130,13 +135,22 @@ class Main(ListView):
 
                 if posts is not None:
                     post_follow.append(posts)
+            comments = Comments.objects.filter(post__in=post_follow)
+            chats_sender = Chat.objects.filter(sender=profile, receiver__in=follows)
 
+            
+            # sender = Profile.objects.get(user=request.user)
+            # receiver = Profile.objects.get(pk=follow_pk)
+            # messages = Chat.objects.filter(sender=receiver, receiver=sender)
             context = self.get_context_data()
             post = NewPosts()
             context = {
                 'profile': profile,
                 'post': post,
                 'post_follow': post_follow,
+                'comments': comments,
+                'follows': follows,
+                'num': chats_sender.count()
             }
             return self.render_to_response(context)
 
@@ -192,6 +206,71 @@ class NewPost(View):
             post.description = newPost.cleaned_data['description']
             post.save()
             return redirect('profile')
+
+
+class CommentView(View):
+    def post(self, request):
+        user = request.user
+        profile = Profile.objects.get(user=user)
+        post_id = request.POST.get('post_id')
+        post_obj = Posts.objects.get(id=post_id)
+        comments = Comments.objects.create(creator=profile, post=post_obj, text=request.POST.get('comment'))
+
+        data = {
+            'user': comments.creator.name,
+            'id': comments.pk
+        }
+        return JsonResponse(data, safe=False)
+
+
+class MessageView(View):
+
+    def post(self, request):
+        if request.method == 'POST':
+            sender = Profile.objects.get(user=request.user)
+            receiver = Profile.objects.get(pk=request.POST.get('follow_pk'))
+            content = request.POST.get('message')
+            like = request.POST.get('like')
+            if not content:
+                message = Chat.objects.create(sender=sender, receiver=receiver, content=like)
+            else:
+                message = Chat.objects.create(sender=sender, receiver=receiver, content=content)
+            data = {
+                "text": message.content
+            }
+            return JsonResponse(data, safe=False)
+
+
+class ReceiveMessageView(View):
+
+    def get(self, request):
+        sender = Profile.objects.get(user=request.user)
+        query_string = request.META.get('QUERY_STRING')
+        params = urllib.parse.parse_qs(query_string)
+        follow_pk = params.get('follow_pk', [None])[0]
+        receiver = Profile.objects.get(pk=follow_pk)
+        arr = []
+        messages = Chat.objects.filter(sender=receiver, receiver=sender)
+        for message in messages:
+            arr.append(message.content)
+        return JsonResponse(arr, safe=False)
+
+
+class CommentLikeView(View):
+    def post(self, request):
+        user = request.user
+        comments_id = request.POST.get('comments_id')
+        if comments_id is None:
+            comments_id = request.POST.get('ewfwegew')
+        comment = Comments.objects.get(id=comments_id)
+        if user in comment.liked.all():
+            comment.liked.remove(user)
+        else:
+            comment.liked.add(user)
+        data = {
+            'num_likes': comment.num_likes,
+        }
+        return JsonResponse(data)
 
 
 class Like(View):
@@ -362,5 +441,3 @@ class Statistics(ListView):
             }
 
             return render(request, 'thesisapp/statistics.html', context)
-
-

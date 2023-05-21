@@ -20,5 +20,9 @@ urlpatterns = [
     path('delite', delite, name='delite'),
     path('edit/', edit, name='edit'),
     path('statistics/', Statistics.as_view(), name='statistics'),
+    path('comment/', CommentView.as_view(), name='comment'),
+    path('comment_like/', CommentLikeView.as_view(), name='comment_like'),
+    path('message/', MessageView.as_view(), name='message'),
+    path('receive_message/', ReceiveMessageView.as_view(), name='receive_message'),
 
 ]
