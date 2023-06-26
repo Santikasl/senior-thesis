@@ -16,6 +16,7 @@ urlpatterns = [
     path('<int:pk>/', SearchProfile.as_view(), name='search_profile'),
     path('newpost/', NewPost.as_view(), name='newpost'),
     path('search/', Search.as_view(), name='search'),
+    path('searchchat/', SearchChat.as_view(), name='searchchat'),
     path('like/', Like.as_view(), name='like'),
     path('delite', delite, name='delite'),
     path('edit/', edit, name='edit'),
@@ -24,5 +25,10 @@ urlpatterns = [
     path('comment_like/', CommentLikeView.as_view(), name='comment_like'),
     path('message/', MessageView.as_view(), name='message'),
     path('receive_message/', ReceiveMessageView.as_view(), name='receive_message'),
+    path('get_count/', GetCountView.as_view(), name='get_count'),
+    path('settings/', Settings.as_view(), name='settings'),
+    path('massage/', MassageView.as_view(), name='massage'),
+    path('sent-file/', sent_file, name='sent_file'),
+    path('newgroup/', newgroup, name='newgroup'),
 
 ]

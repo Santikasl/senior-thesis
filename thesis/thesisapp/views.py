@@ -1,19 +1,20 @@
 import urllib
-
+import urllib
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, \
     PasswordResetCompleteView
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.hashers import check_password
+from django.db.models import Q
 from django.views.generic import ListView, View
 from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.contrib import messages
-from django.db.models import Q
-from itertools import chain
 from .models import *
 from .forms import *
 import random
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
 
 
 class Index(ListView, PasswordResetView):
@@ -127,7 +128,6 @@ class Main(ListView):
             super().get(request)
             profile = Profile.objects.get(user=request.user)
             follows = profile.user.following.all()
-
             users = [user for user in follows]
             post_follow = []
             for u in users:
@@ -137,11 +137,6 @@ class Main(ListView):
                     post_follow.append(posts)
             comments = Comments.objects.filter(post__in=post_follow)
             chats_sender = Chat.objects.filter(sender=profile, receiver__in=follows)
-
-            
-            # sender = Profile.objects.get(user=request.user)
-            # receiver = Profile.objects.get(pk=follow_pk)
-            # messages = Chat.objects.filter(sender=receiver, receiver=sender)
             context = self.get_context_data()
             post = NewPosts()
             context = {
@@ -183,12 +178,15 @@ class UserProfile(ListView):
             context = self.get_context_data()
             follow = profile.user.following.all()
             all_followers = profile.following.all()
+            comments = Comments.objects.filter(post__in=user_post)
+
             followers = Profile.objects.filter(user__in=all_followers)
             context = {
                 'followers': followers,
                 'follow': follow,
                 'user_post': user_post,
                 'imgForm': Imgform(),
+                'comments': comments,
                 'profile': profile,
                 'post': NewPosts(),
 
@@ -214,7 +212,16 @@ class CommentView(View):
         profile = Profile.objects.get(user=user)
         post_id = request.POST.get('post_id')
         post_obj = Posts.objects.get(id=post_id)
-        comments = Comments.objects.create(creator=profile, post=post_obj, text=request.POST.get('comment'))
+        message = request.POST.get('comment')
+        mats = ["ромашка", "розочка", "лилия"]
+        words = message.split()
+        new_string = ''
+        for word in words:
+            if word in mats:
+                count = len(word)
+                mat = '*' * count
+                new_string = message.replace(word, mat)
+        comments = Comments.objects.create(creator=profile, post=post_obj, text=new_string if new_string else message)
 
         data = {
             'user': comments.creator.name,
@@ -227,18 +234,70 @@ class MessageView(View):
 
     def post(self, request):
         if request.method == 'POST':
+            if request.POST.get('unic_id'):
+                sender = Profile.objects.get(user=request.user)
+                group = Group.objects.get(unic_id=request.POST.get('unic_id'))
+                message = request.POST.get('message')
+
+                mats = ["ромашка", "розочка", "лилия"]
+                words = message.split()
+                new_string = ''
+                for word in words:
+                    if word in mats:
+                        count = len(word)
+                        mat = '*' * count
+                        new_string = message.replace(word, mat)
+                if message:
+                    message = Chat.objects.create(sender=sender, content=new_string if new_string else message,
+                                                  to_group=True)
+                    group.messages.add(message)
+                    group.save()
+                data = {
+                    "text": message.content
+                }
+                return JsonResponse(data, safe=False)
+            else:
+                sender = Profile.objects.get(user=request.user)
+                receiver = Profile.objects.get(pk=request.POST.get('follow_pk'))
+                message = request.POST.get('message')
+                mats = ["ромашка", "розочка", "лилия"]
+                like = request.POST.get('like')
+                words = message.split()
+                new_string = ''
+                for word in words:
+                    if word in mats:
+                        count = len(word)
+                        mat = '*' * count
+                        new_string = message.replace(word, mat)
+                if not message:
+                    message = Chat.objects.create(sender=sender, receiver=receiver, content=like)
+                else:
+                    message = Chat.objects.create(sender=sender, receiver=receiver,
+                                                  content=new_string if new_string else message)
+                data = {
+                    "text": message.content
+                }
+                return JsonResponse(data, safe=False)
+
+
+def sent_file(request):
+    if request.method == 'POST':
+        if request.POST.get('unic_id'):
+            sender = Profile.objects.get(user=request.user)
+            group = Group.objects.get(unic_id=request.POST.get('unic_id'))
+            if request.FILES.get("add-file"):
+                photo = request.FILES.get("add-file")
+                message = Chat.objects.create(sender=sender, file=photo, to_group=True)
+                group.messages.add(message)
+                group.save()
+            return redirect('massage')
+        else:
             sender = Profile.objects.get(user=request.user)
             receiver = Profile.objects.get(pk=request.POST.get('follow_pk'))
-            content = request.POST.get('message')
-            like = request.POST.get('like')
-            if not content:
-                message = Chat.objects.create(sender=sender, receiver=receiver, content=like)
-            else:
-                message = Chat.objects.create(sender=sender, receiver=receiver, content=content)
-            data = {
-                "text": message.content
-            }
-            return JsonResponse(data, safe=False)
+            if request.FILES.get("add-file"):
+                photo = request.FILES.get("add-file")
+                message = Chat.objects.create(sender=sender, receiver=receiver, file=photo)
+            return redirect('massage')
 
 
 class ReceiveMessageView(View):
@@ -248,12 +307,63 @@ class ReceiveMessageView(View):
         query_string = request.META.get('QUERY_STRING')
         params = urllib.parse.parse_qs(query_string)
         follow_pk = params.get('follow_pk', [None])[0]
+        if len(follow_pk) == 3:
+            group = Group.objects.get(unic_id=follow_pk)
+            all = group.messages.exclude(sender=sender)
+            arr = []
+            result = {'arr': [], 'user': [], 'userPk': []}  # Создание словаря с ключами-списками
+
+            for i in all:
+                if i.content is not None:
+                    arr.append(i.content)
+                    result['arr'].append(i.content)
+                else:
+                    arr.append(i.file.url)
+                    result['arr'].append(i.file.url)
+
+                result['user'].append(i.sender.img.url)
+                result['userPk'].append(i.sender.pk)
+            return JsonResponse(result, safe=False)
         receiver = Profile.objects.get(pk=follow_pk)
+        all = Chat.objects.filter(sender=receiver, receiver=sender)
         arr = []
-        messages = Chat.objects.filter(sender=receiver, receiver=sender)
-        for message in messages:
-            arr.append(message.content)
-        return JsonResponse(arr, safe=False)
+        result = {'arr': [], 'user': [], 'userPk': []}  # Создание словаря с ключами-списками
+        for i in all:
+            arr.append(i.content)
+            result['arr'].append(i.content)
+            if i.content is None:
+                arr.append(i.file.url)
+                result['arr'].append(i.file.url)
+        return JsonResponse(result, safe=False)
+
+
+class GetCountView(View):
+    def get(self, request):
+        sender = Profile.objects.get(user=request.user)
+        query_string = request.META.get('QUERY_STRING')
+        params = urllib.parse.parse_qs(query_string)
+        follow_pk = params.get('follow_pk', [None])[0]
+        if len(follow_pk) == 3:
+            group = Group.objects.get(unic_id=follow_pk)
+            all = group.messages.exclude(sender=sender)
+            arr = []
+            for i in all:
+                if i.content is not None:
+                    arr.append(i.content)
+                else:
+                    arr.append(i.file.url)
+
+            countsss = len(arr)
+            return JsonResponse(countsss, safe=False)
+        receiver = Profile.objects.get(pk=follow_pk)
+        all = Chat.objects.filter(sender=receiver, receiver=sender)
+        arr = []
+        for i in all:
+            arr.append(i.content)
+            if i.content is None and i.file is not None:
+                arr.append(i.file.url)
+        countsss = len(arr)
+        return JsonResponse(countsss, safe=False)
 
 
 class CommentLikeView(View):
@@ -298,6 +408,22 @@ def delite(request):
         post.delete()
     return redirect('profile')
 
+def newgroup(request):
+    import random
+    random_number = random.randint(100, 999)
+    members = request.POST.getlist('members')
+    profiles = Profile.objects.filter(user__username__in=members)
+    name = request.POST['name']
+
+    profile = Profile.objects.get(user=request.user)
+
+    group = Group.objects.create(name=name, user=profile, unic_id=random_number)
+    group.members.set(profiles)
+    group.members.add(profile)
+
+    return redirect('massage')
+
+
 
 def edit(request):
     id = request.POST.get('id', None)
@@ -313,14 +439,32 @@ class Search(View):
 
     def post(self, request):
         res = None
-        dataName = request.POST.get('dataName')
-        qs = Profile.objects.filter(name__icontains=dataName)[:4]
-        if len(qs) > 0 and len(dataName) > 0:
+        dataName = request.POST.get('dataName').strip().title()
+        search_terms = dataName.split()
+
+        qs = Profile.objects.all()
+
+        if search_terms:
+            qs = qs.filter(
+                Q(user__first_name__icontains=search_terms[0]) |
+                Q(user__last_name__icontains=search_terms[0])
+            )
+
+            for term in search_terms[1:]:
+                qs = qs.filter(
+                    Q(user__first_name__icontains=term) |
+                    Q(user__last_name__icontains=term)
+                )
+
+        qs = qs[:4]
+
+        if qs.exists() and dataName:
             data = []
             for pos in qs:
+                name = f" {pos.user.first_name} {pos.user.last_name}"
                 item = {
                     'pk': pos.pk,
-                    'name': pos.name,
+                    'name': name,
                     'img': pos.img.url,
                 }
                 data.append(item)
@@ -329,6 +473,45 @@ class Search(View):
             res = 'Пользователь не найден'
         return JsonResponse({'data': res})
 
+class SearchChat(View):
+
+    def post(self, request):
+        res = None
+        dataName = request.POST.get('dataName').strip().title()
+        search_terms = dataName.split()
+
+        profile = Profile.objects.get(user=request.user)
+        qs = profile.user.following.all()
+
+        if search_terms:
+            qs = qs.filter(
+                Q(user__first_name__icontains=search_terms[0]) |
+                Q(user__last_name__icontains=search_terms[0])
+            )
+
+            for term in search_terms[1:]:
+                qs = qs.filter(
+                    Q(user__first_name__icontains=term) |
+                    Q(user__last_name__icontains=term)
+                )
+
+        qs = qs[:4]
+
+        if qs.exists() and dataName:
+            data = []
+            for pos in qs:
+                name = f" {pos.user.first_name} {pos.user.last_name}"
+                item = {
+                    'pk': pos.pk,
+                    'name': name,
+                    'img': pos.img.url,
+                }
+                data.append(item)
+            res = data
+            print(res)
+        else:
+            res = 'Пользователь не найден'
+        return JsonResponse({'data': res})
 
 class SearchProfile(ListView):
     queryset = Profile
@@ -441,3 +624,43 @@ class Statistics(ListView):
             }
 
             return render(request, 'thesisapp/statistics.html', context)
+
+
+class MassageView(ListView):
+    queryset = Chat
+    template_name = 'thesisapp/massage.html'
+    context_object_name = 'chat'
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            port = request.META.get('SERVER_PORT')
+            host = request.META.get('REMOTE_ADDR')
+            return redirect('http://' + host + ':' + port + '/' + '#3')
+        else:
+            super().get(request)
+            profile = Profile.objects.get(user=request.user)
+            follows = profile.user.following.all()
+            post = NewPosts()
+            groups = Group.objects.filter(members=profile)
+            context = {
+                'profile': profile,
+                'follows': follows,
+                'post': post,
+                'groups': groups,
+            }
+            return self.render_to_response(context)
+
+
+class Settings(ListView, PasswordResetView):
+    queryset = Profile
+    template_name = 'thesisapp/settings.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(Settings, self).get_context_data(**kwargs)
+        password = PasswordResetForm()
+
+        context = {
+            'password': password,
+        }
+
+        return context

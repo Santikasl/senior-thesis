@@ -74,12 +74,13 @@ class Facts(models.Model):
 
 class Comments(models.Model):
     creator = models.ForeignKey(Profile, on_delete=models.CASCADE, default=None, blank=True,
-                             verbose_name='Пользователь')
+                                verbose_name='Пользователь')
     post = models.ForeignKey(Posts, on_delete=models.CASCADE, default=None, blank=True, verbose_name='Пост')
     text = models.TextField()
     date = models.DateTimeField(auto_now=True, null=True)
     replies = models.ForeignKey('self', null=True, blank=True, related_name='replies_to', on_delete=models.CASCADE)
-    liked = models.ManyToManyField(User, default=None, blank=True,related_name="likeComment", verbose_name='Пользователи лайкнувшие комментарий')
+    liked = models.ManyToManyField(User, default=None, blank=True, related_name="likeComment",
+                                   verbose_name='Пользователи лайкнувшие комментарий')
     repliesUsername = models.CharField(max_length=20, null=True, blank=True, verbose_name="Имя пользователя для ответа")
 
     @property
@@ -97,10 +98,24 @@ class Comments(models.Model):
 
 class Chat(models.Model):
     sender = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='sent_messages')
-    receiver = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='received_messages')
-    content = models.TextField()
+    receiver = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='received_messages', blank=True,
+                                 null=True)
+    content = models.TextField(blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-    seen = models.BooleanField(default=False)
+    file = models.FileField(default=None, blank=True, null=True)
+    to_group = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.sender.name} -> {self.receiver.name}: {self.content}'
+        message = self.content if self.content else "Файл"
+        return f'{self.sender.name}:  {message} '
+
+
+class Group(models.Model):
+    name = models.CharField(blank=True, null=True, max_length=40)
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='creator')
+    members = models.ManyToManyField(Profile, related_name='members')
+    messages = models.ManyToManyField(Chat, related_name='messages', null=True, blank=True)
+    unic_id = models.IntegerField(null=True, blank=True, default=None)
+
+    def __str__(self):
+        return f'Группа {self.name}'

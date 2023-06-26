@@ -9,7 +9,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="{% static 'css/style.min.css' %}">
     <link rel="shortcut icon" href="{% static 'img/icon.png' %}" type="image/x-icon">
-     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -22,6 +22,7 @@
 <div class="wrapper">
     <section class="content">
         <div class="blur-search" id="overlay-blur">
+            {% if bestPost %}
             <div class="statistics_container">
                 <div class="statistics">
                     <div class="statistics_card content2">
@@ -40,19 +41,19 @@
                                 <img class="user_logo_img" src="{{ bestPost.imgUrl }}">
                             </div>
                             <div class="desc">{{ bestPost.name }}</div>
-                             <form action="{% url 'like' %}" method="post" class="like-form form-like2 form2"
-                                      id="k{{bestPost.pk}}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="post_id" value="{{bestPost.pk}}">
-                                    <button class="ui button positive like-btn{{bestPost.pk}}" id="btnlike{{bestPost.pk}}"
-                                            type="submit"><p
-                                            {% if bestPost.post|color:user %}
-                                            style="color: red;"
-                                            {% endif %}
-                                            class="like-img"
-                                            id="like-img{{bestPost.pk}}">
-                                        ❤ {{ bestPost.like }}</p></button>
-                                </form>
+                            <form action="{% url 'like' %}" method="post" class="like-form form-like2 form2"
+                                  id="k{{bestPost.pk}}">
+                                {% csrf_token %}
+                                <input type="hidden" name="post_id" value="{{bestPost.pk}}">
+                                <button class="ui button positive like-btn{{bestPost.pk}}" id="btnlike{{bestPost.pk}}"
+                                        type="submit"><p
+                                        {% if bestPost.post|color:user %}
+                                        style="color: red;"
+                                        {% endif %}
+                                        class="like-img"
+                                        id="like-img{{bestPost.pk}}">
+                                    ❤ {{ bestPost.like }}</p></button>
+                            </form>
                             <div class="content-details2 fadeIn-bottom">
                                 <h3>Описание</h3>
                                 <p>{{ bestPost.descriptions|linebreaksbr }}</p>
@@ -71,6 +72,20 @@
                     </div>
                 </div>
             </div>
+            {% else %}
+            <div class="statistics_container2">
+                <div style="width: 100%;height: 100%; display: flex; align-items: center; justify-content: center">
+                    <div>
+                        <img src="{% static 'img/statistic.gif' %}" alt="">
+                    </div>
+
+                </div>
+                 <div style="width: 100%;height: 100%; margin-top: 50px; font-family: Organetto-Variable; display: flex; align-items: center; justify-content: center">
+                        <h1>Статистика по вашему профилю пока не доступна</h1>
+                    </div>
+            </div>
+
+            {% endif %}
         </div>
     </section>
 </div>
@@ -92,7 +107,7 @@
             $('.overlay3').fadeOut();
         }
     });
-    const ctx = document.getElementById('myChart').getContext('2d');
+ const ctx = document.getElementById('myChart').getContext('2d');
     const myChart = new Chart(ctx,
         {
             type: 'doughnut',
@@ -146,6 +161,7 @@
             }
 
         });
+
 
 </script>
 {% endblock %}

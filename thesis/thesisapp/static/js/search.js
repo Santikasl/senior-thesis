@@ -17,6 +17,7 @@ const sendSearchData = (dataName) => {
         },
         success: (res) => {
             const data = res.data
+            console.log(data)
             if (Array.isArray(data)) {
                 resultBlock.classList.remove('not-found-extend')
                 resultBlock.innerHTML = ""

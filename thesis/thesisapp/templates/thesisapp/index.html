@@ -30,8 +30,8 @@
             <section class="content">
                 <a href="#1"></a>
                 <div class="logo_container">
-                    <img src="{% static 'img/12.png' %}" alt="" width="1400px" style="position: absolute; margin-top: 120px; z-index: -1;">
-                    <img src="{% static 'img/logo.png' %}" alt="" width="700px">
+                    <img src="{% static 'img/12.png' %}" alt="" width="1400px" class="indexLogoBac" style="position: absolute; margin-top: 120px; z-index: -1;">
+                    <img src="{% static 'img/logo.png' %}" alt="" class="indexLogo" width="700px">
                 </div>
                 <div class="text-container">
                     <p>Knowledge Hub</p>
@@ -47,10 +47,10 @@
                 <section class="content__gallery gallery">
                     <div class="gallery__items">
                         <div class="gallery__item gallery__item_big">
-                            <img src="{% static 'img/crystal4 (2).png' %}" alt="">
+                            <img class="crystal1" src="{% static 'img/crystal4 (2).png' %}" alt="">
                         </div>
                         <div class="gallery__item gallery__item_big">
-                            <img src="{% static 'img/text2.png' %}" alt="" style="margin-left: -150px">
+                            <img class="crystal2" src="{% static 'img/text2.png' %}" alt="" style="margin-left: -150px">
                         </div>
                     </div>
                 </section>
@@ -83,6 +83,8 @@
                                 <h1 class="registr_titel">Регистрация</h1>
                                 {% csrf_token %}
                                 {{ register_form.username}}
+                                {{ register_form.first_name}}
+                                {{ register_form.last_name}}
                                 <span class="msg" id="msg_name">Ник должен быть больше 7 символов</span>
                                 {{ register_form.email}}
                                 {{ register_form.password1 }}
@@ -90,13 +92,10 @@
                                     и латинские символы</span>
                                 {{ register_form.password2 }}
                                 <span class="msg" id="msg">Проверьте правильность пароля</span>
-
-
                                 <select name="male" class="male-select">
                                     <option>male</option>
                                     <option>female</option>
                                 </select>
-
                                 <div><a href="#" class="signup" id="signin">Уже есть аккаунт...</a></div>
                                 <button class="btnS" type="submit">START</button>
                             </form>
@@ -111,7 +110,7 @@
                                 <button class="btnS" type="submit">START</button>
                             </form>
                         </div>
-                        <div class="gallery__item gallery__item_big">
+                        <div class="gallery__item gallery__item_big start-mobile" >
 
                                 <img class="welcome-start" src="{% static 'img/start.png' %}" alt="">
 

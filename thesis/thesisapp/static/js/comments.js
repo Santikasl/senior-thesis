@@ -47,7 +47,6 @@ $('.comment-form').submit(function (e) {
                       <input type="hidden" name="comment_id" value="${id}">
                       <button class="comment-like-btn" id="comments_num_likes${id}" value="${id}" name="ewfwegew" type="submit">Нравится</button>
                     </form>
-                   <p style="margin-left: 10px">Ответить</p>
                </div>
            </div>
             `

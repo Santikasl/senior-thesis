@@ -45,7 +45,7 @@
                 <div class="profile_container">
                     <div>
                         <p class="username">
-                            {{ profile.name }}
+                            {{ user.first_name }}&nbsp;&nbsp;{{ user.last_name }}
                         </p>
                     </div>
                 </div>
@@ -83,11 +83,11 @@
                             <button class="more_btn" id="open{{posts.id}}">Подробнее</button>
                         </div>
                         <div class="overlay1" id="myOverlayopen{{posts.id}}">
-                            <div class="popup1">
+                            <div class="popup132">
                                 <div class="photo-post">
-                                    <img src="{{ posts.img.url }}" alt="" width="100%" height="100%"
-                                         style=" object-fit: cover;	">
-                                </div>
+                                        <img src="{{ posts.img.url }}" alt="" width="100%" height="100%"
+                                             style=" object-fit: cover;	">
+                                    </div>
                                 <div>
                                     <nav class="three2">
                                         <ul class="topmenu">
@@ -107,39 +107,101 @@
                                         </ul>
                                     </nav>
                                 </div>
-                                <a href="#">
-                                    <div class="header">
+                                    <a href="{% url 'search_profile' posts.user.id%}">
+                                        <div class="header">
+                                            <div class="avatar3">
+                                                <img class="main-logo" src="{{ posts.user.img.url }}" alt=""
+                                                     width="50px">
+                                            </div>
+                                            <h1 class="title-post">{{posts.user.name}}</h1>
+                                        </div>
+                                    </a>
+                                    <div class="description-profile"  id="description{{posts.id}}">
+                                        <div id="updatedescription{{posts.id}}">
+                                        <p style="margin-bottom: 30px;">{{ posts.description | linebreaksbr }}</p>
+                                        </div>
+                                        {% with comments=posts|comments %}
+                                        {% for comment in comments %}
+                                        <div class="comment-box">
+                                            <div class="comment-container" id="comment-container">
+                                                <div class="avatar-comment">
+                                                    <img class="main-logo" src="{{ comment.creator.img.url }}" alt=""
+                                                         width="50px">
+                                                </div>
+                                                <div class="comment-text">
+                                                    <p class="user-name-comment">{{comment.creator.name}}</p>
+                                                    <p>{{comment.text}}</p>
+                                                </div>
+                                            </div>
+                                            <div class="comment-action">
+                                                {% if comment.num_likes > 0 %}
+                                                <form action="{% url 'comment_like' %}" class="comment-like"
+                                                      method="post"
+                                                      id="k{{comment.id}}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="comment_id" value="{{comment.id}}">
+                                                    <button class="comment-like-btn"
+                                                            id="comments_num_likes{{comment.id}}"
+                                                            type="submit">
+                                                        Нравится({{comment.num_likes}})
+                                                    </button>
+                                                </form>
+                                                {% else %}
+                                                <form action="{% url 'comment_like' %}" class="comment-like"
+                                                      method="post"
+                                                      id="k{{comment.id}}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="comment_id" value="{{comment.id}}">
+                                                    <button class="comment-like-btn"
+                                                            id="comments_num_likes{{comment.id}}"
+                                                            type="submit">
+                                                        Нравится
+                                                    </button>
+                                                </form>
+                                                {% endif %}
 
-                                        <h1 class="title-post">Описание</h1>
+                                            </div>
+
+                                        </div>
+                                        {% endfor %}
+                                        {% endwith %}
+
                                     </div>
-                                </a>
-                                <div class="description" id="description{{posts.id}}">
-                                    <p>{{ posts.description | linebreaksbr }}</p>
-                                </div>
-                                <form action="{% url 'like' %}" method="post" class="like-form form-like form2"
-                                      id="k{{posts.id}}">
+                                    <form action="{% url 'comment' %}" method="post" class="comment-form"
+                                          id="k{{posts.id}}"
+                                          enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="post_id" value="{{posts.id}}">
+                                        <input type="hidden" id="user_photo" name="user_photo"
+                                               value="{{profile.img.url}}">
+                                        <input class="comment-btn{{posts.id}} comment" type="text" name="comment"
+                                               id="btncomment{{posts.id}}" placeholder="Оставить комментарий">
+                                    </form>
+                                    <form action="{% url 'like' %}" method="post" class="like-form form-like3 form2"
+                                          id="k{{posts.id}}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="post_id" value="{{posts.id}}">
+                                        <button class="ui button positive like-btn{{posts.id}}"
+                                                id="btnlike{{posts.id}}"
+                                                type="submit"><p
+                                                {% if posts|color:user %}
+                                                style="color: red;"
+                                                {% endif %}
+                                                class="like-img"
+                                                id="like-img{{posts.id}}">
+                                            ❤ {{ posts.liked.all.count }}</p></button>
+                                    </form>
+                                    <textarea class="edit-desc" id="edit-desc{{posts.id}}" style="display: none">
+                                        {{ posts.description }}
+                                    </textarea>
+                                   <form action="{% url 'edit' %}" method="post">
                                     {% csrf_token %}
-                                    <input type="hidden" name="post_id" value="{{posts.id}}">
-                                    <button class="ui button positive like-btn{{posts.id}}" id="btnlike{{posts.id}}"
-                                            type="submit"><p
-                                            {% if posts|color:user %}
-                                            style="color: red;"
-                                            {% endif %}
-                                            class="like-img"
-                                            id="like-img{{posts.id}}">
-                                        ❤ {{ posts.liked.all.count }}</p></button>
-                                </form>
-                                <textarea class="edit-desc" id="edit-desc{{posts.id}}" style="display: none">
-                {{ posts.description }}
-            </textarea>
-                                <form action="{% url 'edit' %}" method="post">
-                                    {% csrf_token %}
-                                    <button class="edit-button2">Изменить</button>
+                                    <button class="edit-button2" id="edit-button2{{posts.id}}">Изменить</button>
                                     <input class="edit-button" name="id2" id="edit-button{{posts.id}}" type="button"
                                            value="{{ posts.id }}">
 
                                 </form>
-                            </div>
+                                    </div>
                         </div>
                         <div class="overlay5" id="myOverlayopens{{posts.id}}">
                             <div class="popup5">
@@ -230,8 +292,11 @@
 
 <script src="http://code.jquery.com/jquery-2.0.2.min.js"></script>
 <script src="https://yastatic.net/share2/share.js"></script>
+<script src="http://code.jquery.com/jquery-2.0.2.min.js"></script>
 <script src="{% static 'js/like.js' %}" defer></script>
 <script src="{% static 'js/search.js' %}" defer></script>
+<script src="{% static 'js/comments.js' %}" defer></script>
+<script src="{% static 'js/commentsLike.js' %}" defer></script>
 <script src="{% static 'js/edit.js' %}" defer></script>
 <script>
 
@@ -243,7 +308,7 @@
     });
     $(document).mouseup(function (e) {
 
-        var popup = $('.popup1');
+        var popup = $('.popup132');
         if (e.target != popup[0] && popup.has(e.target).length === 0) {
             $('.overlay1').fadeOut();
         }
@@ -294,15 +359,18 @@
             $('.overlay6').fadeOut();
         }
     });
-    //Редактирование описания поста
-    $(document).on('click', '.edit2', function (e) {
 
+        //Редактирование описания поста
+    $(document).on('click', '.edit2', function (e) {
         let id = e.target.id
         let newid = id.slice(1);
         const btnlike = document.getElementById('btnlike' + newid)
         const btn = document.getElementById('edit-button' + newid)
-        console.log(btn)
+        const comm = document.getElementById("k"+newid)
+        let edit_btn2 = document.getElementById("edit-button2"+newid)
+        comm.style.opacity = '0'
         btn.style.display = 'block'
+        edit_btn2.style.display = 'block'
         btnlike.style.opacity = '0'
         const description2 = document.getElementById("description" + newid)
         const textarea = document.getElementById("edit-desc" + newid)

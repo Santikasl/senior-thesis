@@ -19,14 +19,11 @@ $('.like-form').submit(function (e) {
             <p class="like-img" id="like-img${post_id}">❤ ${value}</p>
             `
             })
-
             if (response.like_value == 'Like') {
                 btnlike.forEach(button => {button.style.color = 'black'})
             } else {
                 btnlike.forEach(button => {button.style.color = 'red'})
             }
-
-
         },
         error: function (xhr, errmsg, err) {
             console.log("error");

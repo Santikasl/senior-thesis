@@ -24,7 +24,7 @@
             integrity="sha512-gSf3NCgs6wWEdztl1e6vUqtRP884ONnCNzCpomdoQ0xXsk06lrxJsR7jX5yM/qAGkPGsps+4bLV5IEjhOZX+gg=="
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <title>Главаня</title>
+    <title>Главная</title>
 </head>
 
 {% endblock %}
@@ -74,22 +74,17 @@
                                     </div>
                                 </div>
                             </a>
-                            <div class="home-container2" id="message-btn">
-                                <div class="home-img2">
-                                    <img src="{% static 'img/message.png' %}" alt="" width="20px">
+                            <a class="nav-bar" href="{% url 'massage' %}">
+                                <div class="home-container2" id="message-btn">
+                                    <div class="home-img2">
+                                        <img src="{% static 'img/message.png' %}" alt="" width="20px">
+                                    </div>
+                                    <div class="home-text">
+                                        <p>Сообщения</p>
+                                    </div>
                                 </div>
-                                <div class="home-text">
-                                    <p>Сообщения</p>
-                                </div>
-                            </div>
-                            <div class="home-container2">
-                                <div class="home-img2">
-                                    <img src="{% static 'img/uvedom.png' %}" alt="" width="20px">
-                                </div>
-                                <div class="home-text">
-                                    <p>Уведомления</p>
-                                </div>
-                            </div>
+                            </a>
+
                             <div class="home-container2 add-post">
                                 <div class="home-img2">
                                     <img src="{% static 'img/add.png' %}" alt="" width="20px">
@@ -118,141 +113,6 @@
                             </div>
 
                         </div>
-                        <div class="message" id="message-content">
-                            <div class="message-box">
-                                <div class="chat">
-                                    <div class="well">
-                                        <form action="" id="search-form" method="post" autocomplete="off">
-                                            {% csrf_token %}
-                                            <input class="search2" type="search" name="" id="search-input"
-                                                   placeholder="Поиск">
-                                        </form>
-                                    </div>
-                                    <div class="chat-message">
-
-                                        <div class="chat-list">
-                                            {% for follow in follows %}
-                                            <div class="message-chat-container" data-chat-id="{{follow.pk}}"
-                                                 id="message{{follow.pk}}">
-                                                <div class="avatar-comment">
-                                                    <img class="main-logo" src="{{ follow.img.url }}" alt=""
-                                                         width="50px">
-                                                </div>
-                                                <div class="chat-text">
-                                                    <p class="user-name-message">{{follow.name}}</p>
-                                                    {% if not follow|message:user %}
-                                                    <p class="last-message">Поздоровайся с {{follow.name}}!</p>
-                                                    {% else %}
-                                                    {% for message in follow|message:user %}
-                                                    {% if forloop.last %}
-                                                    {% if message.sender %}
-                                                    <p class="last-message">Вы: {{message.sender.content}}</p>
-                                                    {% else %}
-                                                    <p class="last-message">{{message.receiver.content}}</p>
-                                                    {% endif %}
-                                                    {% endif %}
-                                                    {% endfor %}
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-
-                                    </div>
-
-                                </div>
-                                <div class="message-content_404" id="message-content_404">
-                                    <img style="border-radius: 50px; margin-top: 20%"
-                                         src="{% static 'img/message.gif' %}" alt=""
-                                         width="150px">
-                                    <p style=" font-family: 'Montserrat Alternates', sans-serif; font-size: 17px;">
-                                        Выберите собеседника и начните общение</p>
-                                </div>
-                                {% for follow in follows %}
-                                <div class="message-content" id="chat{{follow.pk}}">
-                                    <div class="message-chat">
-                                        <div class="avatar-message">
-                                            <img class="main-logo" src="{{ follow.img.url }}" alt=""
-                                                 width="50px">
-                                        </div>
-                                        <div class="message-chat-text">
-                                            <p class="user-name-message">{{follow.name}}</p>
-
-                                            {% if not follow|message:user%}
-                                            <p class="last-message">Начни диалог первым!</p>
-                                            {% else %}
-                                            <p class="last-message">Продолжи общение!</p>
-                                            {% endif %}
-
-                                        </div>
-                                    </div>
-
-                                    <div class="user-chat" id="user-message{{follow.pk}}">
-                                        {% for message in follow|message:user %}
-                                        {% if message.sender and not message.sender.content|smile %}
-                                        <div style=" width: 640px; margin-left: 20px; display: flex; justify-content: right">
-                                            <div class="receiver">{{message.sender.content}}</div>
-                                        </div>
-                                        {% elif message.sender and message.sender.content|smile %}
-                                        <div style=" width: 640px; margin-left: 20px; display: flex; justify-content: right">
-                                            <div class="receiver_emoji">{{message.sender.content}}</div>
-                                        </div>
-                                        {% elif message.receiver and message.receiver.content|smile %}
-                                        <div style=" width: 340px; margin-left: 10px; display: flex; justify-content: left;text-align: left; ">
-                                            <div class="sender_emoji">{{message.receiver.content}}</div>
-                                        </div>
-                                        {% else %}
-                                        <div class="sender">{{message.receiver.content}}</div>
-                                        {% endif %}
-                                        {% endfor %}
-
-                                    </div>
-                                    <div class="sent-message">
-                                        <form action="{% url 'message' %}" method="post" class="send-message"
-                                              id="q{{follow.pk}}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="follow_pk" value="{{follow.pk}}">
-                                            <input required class="message-btn sent" id="message-btn{{follow.pk}}"
-                                                   type="text"
-                                                   name="message"
-                                                   placeholder="Напишите сообщение">
-                                        </form>
-                                        <button class="ui button positive2"
-                                                type="submit">
-                                            <p
-                                                    style="color: red;"
-                                                    id="like-img">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25"
-                                                     style="margin-top: 4px" viewBox="0 0 100 100">
-                                                    <rect x="40" y="0" width="20" height="100" rx="10" ry="10"
-                                                          fill="#1e1e1e"/>
-                                                    <rect x="0" y="40" width="100" height="20" rx="10" ry="10"
-                                                          fill="#1e1e1e"/>
-                                                </svg>
-
-                                            </p>
-                                        </button>
-                                        <form action="{% url 'message' %}" method="post" class="send-message"
-                                              id="q{{follow.pk}}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="follow_pk" value="{{follow.pk}}">
-                                            <input type="hidden" name="message" value="🧡" id="like">
-
-                                            <button class="ui button positive2"
-                                                    type="submit"><p
-                                                    style="color: red;"
-                                                    id="like-img">
-                                                ❤
-                                            </p></button>
-                                        </form>
-                                    </div>
-
-
-                                </div>
-                                {% endfor %}
-
-                            </div>
-                        </div>
                         <div id="photo-content">
                             {% if post_follow %}
                             {% for posts in post_follow %}
@@ -262,8 +122,6 @@
                                         <img src="{{ posts.img.url }}" alt="" width="100%" height="100%"
                                              style=" object-fit: cover;	">
                                     </div>
-
-
                                     <a href="{% url 'search_profile' posts.user.id%}">
                                         <div class="header">
                                             <div class="avatar3">
@@ -273,7 +131,6 @@
                                             <h1 class="title-post">{{posts.user.name}}</h1>
                                         </div>
                                     </a>
-
                                     <div class="description" id="description{{posts.id}}">
                                         <p style="margin-bottom: 30px;">{{ posts.description | linebreaksbr }}</p>
                                         {% with comments=posts|comments %}
@@ -315,7 +172,7 @@
                                                     </button>
                                                 </form>
                                                 {% endif %}
-                                                <p style="margin-left: 10px">Ответить</p>
+
                                             </div>
 
                                         </div>
@@ -359,8 +216,8 @@
                 </div>
             </div>
             {% else %}
-            <div>
-                <img src="{% static 'img/not.gif' %}" alt="" width="300px" style="margin-left: 30%; margin-top: 5%">
+            <div style="position: fixed">
+                <img src="{% static 'img/not.gif' %}" alt="" width="300px" style="margin-left: 40%; margin-top: -25%">
                 <h2 class="no-followers-title">Подпишитесь на друзей, чтобы видеть их обновления</h2>
                 {% endif %}
             </div>
@@ -477,127 +334,7 @@
     function PopUpHide() {
         $("#popup1").hide();
     }
-</script>
-
-<script>
-    const messageBtn = document.getElementById('message-btn')
-    const photoContent = document.getElementById('photo-content')
-    const messageContent = document.getElementById('message-content')
-    const section2 = document.getElementById('section2')
-    messageBtn.onclick = function () {
-        photoContent.style.display = "none";
-        messageContent.style.display = "unset";
-        section2.style.overflowY = "hidden";
-
-    };
-    let intervalId;
-    let counter;
-    const message404 = document.getElementById("message-content_404");
-    const messageContainers = document.getElementsByClassName("message-chat-container");
-    const chats = document.querySelectorAll("[id^='chat']");
-
-    for (let i = 0; i < messageContainers.length; i++) {
-        let messageContainer = messageContainers[i];
-        messageContainer.addEventListener("click", function () {
-            let chatId = messageContainer.getAttribute("data-chat-id");
-            hideAllChats();
-            message404.style.display = "none";
-            showChat(chatId);
-    counter = chatId
-    intervalId = setInterval(function() {
-        receiveMsg(chatId); // Повторный вызов каждые 2 секунды
-    }, 2000);
-
-        });
-    }
-
-    function hideAllChats() {
-        for (let i = 0; i < chats.length; i++) {
-            let chat = chats[i];
-            chat.style.display = "none";
-            clearInterval(intervalId);
-        }
-    }
-
-
-    function showChat(chatId) {
-
-        let chat = document.getElementById("chat" + chatId);
-        if (chat) {
-            chat.style.display = "block";
-            message404.style.display = "none";
-            let message = document.getElementById("user-message" + chatId)
-            const scrollHeight = message.scrollHeight;
-            const scrollOptions = {
-                top: scrollHeight,
-                behavior: "smooth" // Добавляем плавность
-            };
-            message.scrollTo(scrollOptions);
-
-        }
-    }
 
 
 
-
-    function containsSmileys(text) {
-        var regex = /[\uD83C-\uDBFF\uDC00-\uDFFF]+/g; // Регулярное выражение для поиска смайликов
-        return regex.test(text);
-    }
-
-
-
-    counter = {{num}}
-    function receiveMsg(followPk) {
-        let url = "{% url 'receive_message' %}?follow_pk=" + followPk
-        const message_container = document.getElementById('user-message' + followPk)
-        const scrollHeight = message_container.scrollHeight;
-        const scrollOptions = {
-            top: scrollHeight,
-            behavior: "smooth" // Добавляем плавность
-        };
-        fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-Follow-Pk': followPk,
-            },
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-                if (data.length == 0) {
-                } else {
-
-                    let lastMsg = data[data.length - 1]
-                    console.log(lastMsg)
-
-                    if (counter == data.length) {
-                        console.log("there is no new chat")
-                    } else {
-                        message_container.innerHTML += `
-                                 <div style=" display: flex; justify-content: left;text-align: left; ">
-                                          <div class="sender">${lastMsg}</div>
-                                 </div>
-
-
-            `
-                        message_container.scrollTo(scrollOptions);
-                    }
-
-
-                }
-
-
-
-                counter = data.length
-
-
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-    }
-
-
-</script>
 {% endblock %}

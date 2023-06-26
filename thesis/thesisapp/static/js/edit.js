@@ -1,14 +1,15 @@
 $(document).on('click', '.edit-button', function (e) {
-    var post_id_not_slice =  $(this).attr('id')
-    const post_id =  post_id_not_slice.slice(1)
-    const url = $(this).attr('action')
-    let res
-    const like = $(`.like-btn${post_id}`).text()
-    const intLike = like
-    const trimCount = parseInt(intLike)
-    const btnlike = document.querySelectorAll('#btnlike' + post_id)
-
-
+    let id = e.target.id;
+    const ge = document.getElementById(id)
+    let idPosts = ge.value
+    const desc = document.getElementById('edit-desc' + idPosts)
+    let description = desc.value
+    const descriptionpost2 = document.getElementById('open' + idPosts)
+    const description2 = document.getElementById("description" + idPosts)
+    const textarea = document.getElementById("edit-desc" + idPosts)
+    const btnlike = document.getElementById('btnlike' + idPosts)
+    const edit_btn2 = document.getElementById("edit-button2"+idPosts)
+    const comm = document.getElementById("k"+idPosts)
     $.ajax({
         type: 'POST',
         url: '/edit/',
@@ -32,6 +33,8 @@ $(document).on('click', '.edit-button', function (e) {
             ${dataPost2.split('\n').join('<br>')}
             `
             btnlike.style.opacity = '1'
+            comm.style.opacity = '1'
+            edit_btn2.style.display = 'none'
         },
 
         error: function (xhr, errmsg, err) {

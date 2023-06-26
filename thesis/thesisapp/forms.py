@@ -5,8 +5,9 @@ from django import forms
 
 
 class AuthForm(forms.Form):
-    name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Логин','class': 'js-input'}), max_length=12)
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Пароль', 'class': 'js-input'}), max_length=60)
+    name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Логин', 'class': 'js-input'}), max_length=12)
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Пароль', 'class': 'js-input'}),
+                               max_length=60)
 
 
 class NewPosts(forms.ModelForm):
@@ -19,16 +20,28 @@ class NewPosts(forms.ModelForm):
         model = Posts
         fields = ['postImg', 'description']
         widgets = {
-            'description': forms.Textarea(attrs={'placeholder': 'Описание', 'maxlength': '2000','class': 'description-input'}),
+            'description': forms.Textarea(
+                attrs={'placeholder': 'Описание', 'maxlength': '2000', 'class': 'description-input'}),
         }
 
 
 class ExtendedRegisterForm(UserCreationForm):
     email = forms.EmailField(required=True,
-                             widget=forms.EmailInput(attrs={'placeholder': 'Электронная почта', 'class': 'js-input js-input-email'}))
-    password1 = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Пароль', 'class': 'js-input js-input-password1'}), max_length=60)
-    password2 = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Подтвердите пароль', 'class': 'js-input js-input-password2'}), max_length=60,)
-    username = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Логин', 'class': 'js-input js-input-name','oninput':'this.value=this.value.toLowerCase()'}), max_length=12)
+                             widget=forms.EmailInput(
+                                 attrs={'placeholder': 'Электронная почта', 'class': 'js-input js-input-email'}))
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'placeholder': 'Пароль', 'class': 'js-input js-input-password1'}),
+        max_length=60)
+    password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'placeholder': 'Подтвердите пароль', 'class': 'js-input js-input-password2'}),
+        max_length=60, )
+    username = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Логин', 'class': 'js-input js-input-name',
+                                                             'oninput': 'this.value=this.value.toLowerCase()'}),
+                               max_length=12)
+    first_name = forms.CharField(
+        widget=forms.TextInput(attrs={'placeholder': 'Имя', 'class': 'js-input js-input-name'}), max_length=20)
+    last_name = forms.CharField(
+        widget=forms.TextInput(attrs={'placeholder': 'Фамилия', 'class': 'js-input js-input-name'}), max_length=30)
 
     def clean(self):
         # Определяем правило валидации
@@ -39,7 +52,7 @@ class ExtendedRegisterForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password1', 'password2')
+        fields = ('username', 'email', 'password1', 'password2', 'first_name', 'last_name')
 
 
 class Imgform(forms.ModelForm):
@@ -48,5 +61,3 @@ class Imgform(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['img']
-
-
